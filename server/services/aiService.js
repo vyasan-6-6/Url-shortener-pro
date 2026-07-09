@@ -9,7 +9,7 @@ const initAI = () => {
   if (apiKey && apiKey !== 'YOUR_GEMINI_API_KEY_HERE') {
     try {
       genAI = new GoogleGenerativeAI(apiKey);
-      model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+      model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
       console.log('Google Gemini AI Service Initialized successfully');
     } catch (err) {
       console.error('Failed to initialize Google Gemini AI:', err.message);
