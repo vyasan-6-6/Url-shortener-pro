@@ -2,6 +2,7 @@ import Url from '../models/Url.js';
 import Click from '../models/Click.js';
 import { generateShortCode } from '../utils/generateShortCode.js';
 import useragent from 'useragent';
+import QRCode from 'qrcode';
 
 /**
  * Helper to validate URL structure
@@ -318,6 +319,59 @@ export const updateUrl = async (req, res, next) => {
     res.status(200).json({
       status: 'success',
       data: url
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * @desc    Generate QR Code for a short URL
+ * @route   GET /urls/:id/qrcode
+ * @access  Private (Requires Authentication)
+ */
+export const getUrlQRCode = async (req, res, next) => {
+  const { id } = req.params;
+
+  try {
+    const url = await Url.findById(id);
+
+    if (!url || url.isDeleted) {
+      return res.status(404).json({
+        status: 'error',
+        message: 'URL mapping not found'
+      });
+    }
+
+    // Authorization: Check ownership
+    if (url.userId.toString() !== req.user._id.toString()) {
+      return res.status(403).json({
+        status: 'error',
+        message: 'You are not authorized to access this URL'
+      });
+    }
+
+    // Construct the short URL based on host domain
+    const host = req.get('host');
+    const domain = `${req.protocol}://${host}`;
+    const shortUrl = `${domain}/${url.shortCode}`;
+
+    // Generate QR Code data URL (Base64 PNG)
+    const qrCodeDataUrl = await QRCode.toDataURL(shortUrl, {
+      width: 250,
+      margin: 2,
+      color: {
+        dark: '#0f172a', // slate-900
+        light: '#ffffff' // white
+      }
+    });
+
+    res.status(200).json({
+      status: 'success',
+      data: {
+        qrCodeDataUrl,
+        shortUrl
+      }
     });
   } catch (error) {
     next(error);
