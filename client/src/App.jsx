@@ -5,6 +5,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import NotFound from './pages/NotFound';
+import ServerError from './pages/ServerError';
 import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
@@ -45,6 +46,9 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         
+        {/* Server Error Page */}
+        <Route path="/500" element={<ServerError />} />
+
         {/* Catch-all 404 Page */}
         <Route path="*" element={<NotFound />} />
       </Routes>
