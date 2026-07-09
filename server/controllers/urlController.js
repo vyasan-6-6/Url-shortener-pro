@@ -377,3 +377,67 @@ export const getUrlQRCode = async (req, res, next) => {
     next(error);
   }
 };
+
+/**
+ * @desc    Get analytics statistics for a short URL
+ * @route   GET /stats/:shortCode
+ * @access  Public
+ */
+export const getUrlStats = async (req, res, next) => {
+  const { shortCode } = req.params;
+
+  try {
+    // 1. Find URL in database
+    const url = await Url.findOne({ shortCode, isDeleted: false });
+    if (!url) {
+      return res.status(404).json({
+        status: 'error',
+        message: 'URL mapping not found'
+      });
+    }
+
+    // 2. Fetch the most recent clicks to determine lastAccessed timestamp and get recent log details
+    const recentClicks = await Click.find({ urlId: url._id })
+      .sort({ clickedAt: -1 })
+      .limit(10);
+
+    const lastAccessed = recentClicks.length > 0 ? recentClicks[0].clickedAt : null;
+
+    // 3. Aggregate Click statistics by Browser
+    const browserStats = await Click.aggregate([
+      { $match: { urlId: url._id } },
+      { $group: { _id: '$browser', count: { $sum: 1 } } },
+      { $sort: { count: -1 } }
+    ]);
+
+    // 4. Aggregate Click statistics by Referrer
+    const referrerStats = await Click.aggregate([
+      { $match: { urlId: url._id } },
+      { $group: { _id: '$referrer', count: { $sum: 1 } } },
+      { $sort: { count: -1 } }
+    ]);
+
+    // 5. Structure stats output payload
+    res.status(200).json({
+      status: 'success',
+      data: {
+        shortCode,
+        originalUrl: url.originalUrl,
+        clicksCount: url.clicks,
+        createdAt: url.createdAt,
+        expiresAt: url.expiresAt,
+        lastAccessed,
+        browsers: browserStats.map(item => ({ browser: item._id || 'Unknown', count: item.count })),
+        referrers: referrerStats.map(item => ({ referrer: item._id || 'Direct', count: item.count })),
+        recentActivity: recentClicks.map(item => ({
+          clickedAt: item.clickedAt,
+          browser: item.browser,
+          ip: item.ip ? `${item.ip.split('.').slice(0, 2).join('.')}.*.*` : 'Unknown', // Anonymize IP for compliance
+          referrer: item.referrer
+        }))
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+};

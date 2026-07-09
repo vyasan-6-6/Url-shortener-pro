@@ -4,7 +4,7 @@ import dotenv from 'dotenv';
 import connectDB from './config/db.js';
 import authRoutes from './routes/authRoutes.js';
 import urlRoutes from './routes/urlRoutes.js';
-import { redirectToOriginal } from './controllers/urlController.js';
+import { redirectToOriginal, getUrlStats } from './controllers/urlController.js';
 
 // Load environment variables
 dotenv.config();
@@ -25,6 +25,9 @@ app.use(express.urlencoded({ extended: true }));
 // Routes
 app.use('/auth', authRoutes);
 app.use('/urls', urlRoutes);
+
+// Public Stats Page Route
+app.get('/stats/:shortCode', getUrlStats);
 
 // Public Redirection Route
 app.get('/:shortCode', redirectToOriginal);
