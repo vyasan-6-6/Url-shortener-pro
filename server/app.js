@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import connectDB from './config/db.js';
 import apiRoutes from './routes/index.js';
 import { redirectToOriginal, getUrlStats } from './controllers/urlController.js';
+import { errorHandler } from './middlewares/errorHandler.js';
 
 // Load environment variables
 dotenv.config();
@@ -48,13 +49,7 @@ app.use((req, res, next) => {
 });
 
 // Global Error Handler Middleware
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(err.status || 500).json({
-    status: 'error',
-    message: err.message || 'Internal Server Error'
-  });
-});
+app.use(errorHandler);
 
 const PORT = process.env.PORT || 8000;
 app.listen(PORT, () => {
