@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-hot-toast';
 import { useQrCode } from '../hooks/useQrCode';
 import { useAiFeatures } from '../hooks/useAiFeatures';
 import { useAnalytics } from '../hooks/useAnalytics';
+import { createUrl, getUrls, deleteUrl, updateUrl } from '../services/urlService';
 import { 
   LogOut, Link2, PlusCircle, ExternalLink, BarChart3, 
   Clock, Trash2, Edit2, QrCode, Search, Copy, Check, 
@@ -60,24 +60,15 @@ function Dashboard() {
     closeStats
   } = useAnalytics();
 
-  // 1. React Query: Fetch URLs
   const { data: urlData, isLoading, isError, refetch } = useQuery({
     queryKey: ['urls', page, search],
-    queryFn: async () => {
-      const response = await api.get('/urls', {
-        params: { page, limit, search }
-      });
-      return response.data;
-    },
+    queryFn: () => getUrls(page, limit, search),
     keepPreviousData: true
   });
 
   // 2. React Query: Create URL Mutation
   const createMutation = useMutation({
-    mutationFn: async (newUrlData) => {
-      const response = await api.post('/urls', newUrlData);
-      return response.data;
-    },
+    mutationFn: createUrl,
     onSuccess: () => {
       toast.success('Short URL created successfully!');
       setOriginalUrl('');
@@ -93,9 +84,7 @@ function Dashboard() {
 
   // 3. React Query: Delete URL Mutation
   const deleteMutation = useMutation({
-    mutationFn: async (id) => {
-      await api.delete(`/urls/${id}`);
-    },
+    mutationFn: deleteUrl,
     onSuccess: () => {
       toast.success('Link deleted successfully');
       queryClient.invalidateQueries(['urls']);
@@ -107,9 +96,7 @@ function Dashboard() {
 
   // 4. React Query: Edit URL Mutation
   const editMutation = useMutation({
-    mutationFn: async ({ id, originalUrl }) => {
-      await api.put(`/urls/${id}`, { originalUrl });
-    },
+    mutationFn: ({ id, originalUrl }) => updateUrl(id, originalUrl),
     onSuccess: () => {
       toast.success('Link updated successfully');
       setEditingId(null);
