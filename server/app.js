@@ -1,13 +1,13 @@
+import dotenv from 'dotenv';
+// Load environment variables immediately on startup before other imports
+dotenv.config();
+
 import express from 'express';
 import cors from 'cors';
-import dotenv from 'dotenv';
 import connectDB from './config/db.js';
 import apiRoutes from './routes/index.js';
 import { redirectToOriginal, getUrlStats } from './controllers/urlController.js';
 import { errorHandler } from './middlewares/errorHandler.js';
-
-// Load environment variables
-dotenv.config();
 
 // Connect to Database
 connectDB();

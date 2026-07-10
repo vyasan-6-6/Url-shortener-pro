@@ -36,8 +36,5 @@ const urlSchema = new mongoose.Schema(
   }
 );
 
-// Add index on shortCode for high-performance database lookups
-urlSchema.index({ shortCode: 1 });
-
 const Url = mongoose.model('Url', urlSchema);
 export default Url;

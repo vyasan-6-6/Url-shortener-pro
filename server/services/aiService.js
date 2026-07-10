@@ -26,6 +26,9 @@ const initAI = () => {
  */
 export const checkUrlSafety = async (url) => {
   if (!genAI || !model) {
+    initAI();
+  }
+  if (!genAI || !model) {
     // Mock Safety Verification Fallback (Always returns safe unless it contains a dummy malicious keyword)
     const isMockMalicious = url.includes('malicious') || url.includes('phishing') || url.includes('hack-site');
     return {
@@ -73,6 +76,9 @@ Do not return any markdown formatting, backticks, or extra commentary. Just retu
  */
 export const generateAliases = async (url) => {
   if (!genAI || !model) {
+    initAI();
+  }
+  if (!genAI || !model) {
     // Mock Alias Generation Fallback
     try {
       const hostname = new URL(url).hostname.replace('www.', '').split('.')[0];
@@ -106,6 +112,9 @@ Do not return any markdown formatting, backticks, or extra commentary. Just retu
  * @returns {Promise<string>} Natural language analytical insights
  */
 export const generateAnalyticsInsights = async (url, clicks) => {
+  if (!genAI || !model) {
+    initAI();
+  }
   if (!genAI || !model) {
     // Mock Insights Fallback
     return `[MOCK AI INSIGHTS] Your link "/${url.shortCode}" directing to "${new URL(url.originalUrl).hostname}" has recorded ${url.clicks} total clicks. Most traffic appears to originate from direct channels. We recommend sharing the short link across social platforms like LinkedIn and Twitter during high-engagement hours (9 AM - 11 AM) to track browser variations.`;
