@@ -3,11 +3,6 @@ import Url from '../models/Url.js';
 import Click from '../models/Click.js';
 import asyncHandler from '../utils/asyncHandler.js';
 
-/**
- * @desc    Generate 3 suggested short aliases using Gemini AI
- * @route   POST /ai/aliases
- * @access  Private (Requires Authentication)
- */
 export const getAiAliases = asyncHandler(async (req, res, next) => {
   const { originalUrl } = req.body;
 
@@ -26,11 +21,6 @@ export const getAiAliases = asyncHandler(async (req, res, next) => {
   });
 });
 
-/**
- * @desc    Generate summary insights of click analytics logs using Gemini AI
- * @route   POST /ai/insights
- * @access  Private (Requires Authentication)
- */
 export const getAiInsights = asyncHandler(async (req, res, next) => {
   const { urlId } = req.body;
 

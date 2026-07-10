@@ -21,11 +21,6 @@ const initAI = () => {
   }
 };
 
-/**
- * AI check to determine if a URL is malicious, suspicious, or contains safety threats
- * @param {string} url - The original destination URL to check
- * @returns {Promise<{isSafe: boolean, reason: string}>} Safety status object
- */
 export const checkUrlSafety = async (url) => {
   if (!genAI || !model) {
     initAI();
@@ -68,11 +63,6 @@ Do not return any markdown formatting, backticks, or extra commentary. Just retu
   }
 };
 
-/**
- * AI generation of 3 catchy and relevant short aliases based on a long URL
- * @param {string} url - The long URL to generate aliases for
- * @returns {Promise<string[]>} List of 3 suggested aliases
- */
 export const generateAliases = async (url) => {
   if (!genAI || !model) {
     initAI();
@@ -103,12 +93,6 @@ Do not return any markdown formatting, backticks, or extra commentary. Just retu
   }
 };
 
-/**
- * AI generation of summaries and traffic analytics recommendations
- * @param {object} url - The URL database object details
- * @param {object[]} clicks - The list of visitor click documents
- * @returns {Promise<string>} Natural language analytical insights
- */
 export const generateAnalyticsInsights = async (url, clicks) => {
   if (!genAI || !model) {
     initAI();

@@ -15,11 +15,6 @@ const isValidUrl = (string) => {
   }
 };
 
-/**
- * @desc    Create a short URL
- * @route   POST /urls
- * @access  Private (Requires Authentication)
- */
 export const createShortUrl = asyncHandler(async (req, res, next) => {
   const { originalUrl, customAlias, expiresAt } = req.body;
 
@@ -113,11 +108,6 @@ export const createShortUrl = asyncHandler(async (req, res, next) => {
   });
 });
 
-/**
- * @desc    Get all URLs created by the authenticated user
- * @route   GET /urls
- * @access  Private (Requires Authentication)
- */
 export const getUserUrls = asyncHandler(async (req, res, next) => {
   const page = parseInt(req.query.page) || 1;
   const limit = parseInt(req.query.limit) || 10;
@@ -155,11 +145,6 @@ export const getUserUrls = asyncHandler(async (req, res, next) => {
   });
 });
 
-/**
- * @desc    Redirect short URL to original destination & log click analytics
- * @route   GET /:shortCode
- * @access  Public
- */
 export const redirectToOriginal = asyncHandler(async (req, res, next) => {
   const { shortCode } = req.params;
 
@@ -208,11 +193,6 @@ export const redirectToOriginal = asyncHandler(async (req, res, next) => {
   return res.redirect(302, url.originalUrl);
 });
 
-/**
- * @desc    Delete a URL (Soft Delete)
- * @route   DELETE /urls/:id
- * @access  Private (Requires Authentication)
- */
 export const deleteUrl = asyncHandler(async (req, res, next) => {
   const { id } = req.params;
 
@@ -241,11 +221,6 @@ export const deleteUrl = asyncHandler(async (req, res, next) => {
   });
 });
 
-/**
- * @desc    Update destination URL
- * @route   PUT /urls/:id
- * @access  Private (Requires Authentication)
- */
 export const updateUrl = asyncHandler(async (req, res, next) => {
   const { id } = req.params;
   const { originalUrl } = req.body;
@@ -289,11 +264,6 @@ export const updateUrl = asyncHandler(async (req, res, next) => {
   });
 });
 
-/**
- * @desc    Generate QR Code for a short URL
- * @route   GET /urls/:id/qrcode
- * @access  Private (Requires Authentication)
- */
 export const getUrlQRCode = asyncHandler(async (req, res, next) => {
   const { id } = req.params;
 
@@ -335,11 +305,6 @@ export const getUrlQRCode = asyncHandler(async (req, res, next) => {
   });
 });
 
-/**
- * @desc    Get analytics statistics for a short URL
- * @route   GET /stats/:shortCode
- * @access  Public
- */
 export const getUrlStats = asyncHandler(async (req, res, next) => {
   const { shortCode } = req.params;
 

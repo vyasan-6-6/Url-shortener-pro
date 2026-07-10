@@ -2,11 +2,6 @@ import User from '../models/User.js';
 import generateToken from '../utils/generateToken.js';
 import asyncHandler from '../utils/asyncHandler.js';
 
-/**
- * @desc    Register a new user
- * @route   POST /auth/register
- * @access  Public
- */
 export const registerUser = asyncHandler(async (req, res, next) => {
   const { name, email, password } = req.body;
 
@@ -46,11 +41,6 @@ export const registerUser = asyncHandler(async (req, res, next) => {
   });
 });
 
-/**
- * @desc    Authenticate user & get token
- * @route   POST /auth/login
- * @access  Public
- */
 export const loginUser = asyncHandler(async (req, res, next) => {
   const { email, password } = req.body;
 
