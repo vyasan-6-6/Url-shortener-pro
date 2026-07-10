@@ -41,7 +41,6 @@ export const getAiInsights = asyncHandler(async (req, res, next) => {
     });
   }
 
-  // 1. Fetch URL detail and check if it exists
   const url = await Url.findById(urlId);
   if (!url || url.isDeleted) {
     return res.status(404).json({
@@ -50,7 +49,6 @@ export const getAiInsights = asyncHandler(async (req, res, next) => {
     });
   }
 
-  // 2. Authorization: verify current user owns this URL
   if (url.userId.toString() !== req.user._id.toString()) {
     return res.status(403).json({
       status: 'error',
@@ -58,10 +56,8 @@ export const getAiInsights = asyncHandler(async (req, res, next) => {
     });
   }
 
-  // 3. Fetch Click records belonging to the URL
   const clicks = await Click.find({ urlId: url._id }).sort({ clickedAt: -1 });
 
-  // 4. Call Gemini AI helper to generate traffic summaries
   const insights = await generateAnalyticsInsights(url, clicks);
 
   res.status(200).json({

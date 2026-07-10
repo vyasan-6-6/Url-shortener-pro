@@ -6,9 +6,6 @@ import QRCode from 'qrcode';
 import { checkUrlSafety } from '../services/aiService.js';
 import asyncHandler from '../utils/asyncHandler.js';
 
-/**
- * Helper to validate URL structure
- */
 const isValidUrl = (string) => {
   try {
     const url = new URL(string);
@@ -26,7 +23,6 @@ const isValidUrl = (string) => {
 export const createShortUrl = asyncHandler(async (req, res, next) => {
   const { originalUrl, customAlias, expiresAt } = req.body;
 
-  // 1. Validate Original URL
   if (!originalUrl) {
     return res.status(400).json({
       status: 'error',
@@ -41,7 +37,6 @@ export const createShortUrl = asyncHandler(async (req, res, next) => {
     });
   }
 
-  // AI Safety Check: analyze original URL for security threats
   const safetyCheck = await checkUrlSafety(originalUrl);
   if (!safetyCheck.isSafe) {
     return res.status(400).json({
@@ -52,9 +47,7 @@ export const createShortUrl = asyncHandler(async (req, res, next) => {
 
   let code = customAlias ? customAlias.trim() : '';
 
-  // 2. Validate Custom Alias (if provided)
   if (code) {
-    // Allow only alphanumeric characters, dashes, and underscores
     const aliasRegex = /^[a-zA-Z0-9-_]+$/;
     if (!aliasRegex.test(code)) {
       return res.status(400).json({
@@ -63,7 +56,6 @@ export const createShortUrl = asyncHandler(async (req, res, next) => {
       });
     }
 
-    // Check if alias is already taken
     const aliasTaken = await Url.findOne({ shortCode: code, isDeleted: false });
     if (aliasTaken) {
       return res.status(400).json({
@@ -72,7 +64,6 @@ export const createShortUrl = asyncHandler(async (req, res, next) => {
       });
     }
   } else {
-    // 3. Generate random code if no custom alias is provided (ensure uniqueness)
     let isUnique = false;
     let attempts = 0;
     while (!isUnique && attempts < 10) {
@@ -92,7 +83,6 @@ export const createShortUrl = asyncHandler(async (req, res, next) => {
     }
   }
 
-  // 4. Validate Expiration Date (if provided)
   let expirationDate = null;
   if (expiresAt) {
     expirationDate = new Date(expiresAt);
@@ -110,11 +100,10 @@ export const createShortUrl = asyncHandler(async (req, res, next) => {
     }
   }
 
-  // 5. Create URL document in database
   const url = await Url.create({
     originalUrl,
     shortCode: code,
-    userId: req.user._id, // Set the owner from the JWT middleware
+    userId: req.user._id,
     expiresAt: expirationDate
   });
 
@@ -130,19 +119,16 @@ export const createShortUrl = asyncHandler(async (req, res, next) => {
  * @access  Private (Requires Authentication)
  */
 export const getUserUrls = asyncHandler(async (req, res, next) => {
-  // 1. Extract query parameters for Search and Pagination
   const page = parseInt(req.query.page) || 1;
   const limit = parseInt(req.query.limit) || 10;
   const search = req.query.search || '';
   const skip = (page - 1) * limit;
 
-  // 2. Build search query object
   const query = {
     userId: req.user._id,
     isDeleted: false
   };
 
-  // If search term exists, search in originalUrl or shortCode
   if (search) {
     query.$or = [
       { originalUrl: { $regex: search, $options: 'i' } },
@@ -150,10 +136,9 @@ export const getUserUrls = asyncHandler(async (req, res, next) => {
     ];
   }
 
-  // 3. Query Database for count and data
   const totalCount = await Url.countDocuments(query);
   const urls = await Url.find(query)
-    .sort({ createdAt: -1 }) // Show newly created links first
+    .sort({ createdAt: -1 })
     .skip(skip)
     .limit(limit);
 
@@ -178,16 +163,12 @@ export const getUserUrls = asyncHandler(async (req, res, next) => {
 export const redirectToOriginal = asyncHandler(async (req, res, next) => {
   const { shortCode } = req.params;
 
-  // 1. Database Lookup: find the URL that is not deleted
   const url = await Url.findOne({ shortCode, isDeleted: false });
 
-  // 2. Fallback: if URL does not exist
   if (!url) {
-    // Redirect to the client-side 404 page
     return res.redirect(`${process.env.CLIENT_URL || 'http://localhost:5173'}/404`);
   }
 
-  // 3. Conditional Check: check if URL has expired
   if (url.expiresAt && new Date(url.expiresAt) < new Date()) {
     return res.status(410).send(`
       <html>
@@ -210,16 +191,13 @@ export const redirectToOriginal = asyncHandler(async (req, res, next) => {
     `);
   }
 
-  // 4. Atomic Update: Increment clicks in database using MongoDB $inc operator
   await Url.findByIdAndUpdate(url._id, { $inc: { clicks: 1 } });
 
-  // 5. Gather analytical details from request headers
   const agent = useragent.parse(req.headers['user-agent'] || '');
   const browser = agent.family || 'Unknown';
   const ip = req.ip || req.headers['x-forwarded-for'] || 'Unknown';
   const referrer = req.headers['referer'] || 'Direct';
 
-  // 6. Asynchronously save click analytics to database (non-blocking)
   Click.create({
     urlId: url._id,
     browser,
@@ -227,7 +205,6 @@ export const redirectToOriginal = asyncHandler(async (req, res, next) => {
     referrer
   }).catch((err) => console.error('Click logging error:', err));
 
-  // 7. HTTP Redirect: 302 Temporary Redirect to the original URL
   return res.redirect(302, url.originalUrl);
 });
 
@@ -248,7 +225,6 @@ export const deleteUrl = asyncHandler(async (req, res, next) => {
     });
   }
 
-  // Authorization: Check ownership
   if (url.userId.toString() !== req.user._id.toString()) {
     return res.status(403).json({
       status: 'error',
@@ -256,7 +232,6 @@ export const deleteUrl = asyncHandler(async (req, res, next) => {
     });
   }
 
-  // Soft delete: set isDeleted to true
   url.isDeleted = true;
   await url.save();
 
@@ -298,7 +273,6 @@ export const updateUrl = asyncHandler(async (req, res, next) => {
     });
   }
 
-  // Authorization: Check ownership
   if (url.userId.toString() !== req.user._id.toString()) {
     return res.status(403).json({
       status: 'error',
@@ -306,7 +280,6 @@ export const updateUrl = asyncHandler(async (req, res, next) => {
     });
   }
 
-  // Update fields
   url.originalUrl = originalUrl;
   await url.save();
 
@@ -333,7 +306,6 @@ export const getUrlQRCode = asyncHandler(async (req, res, next) => {
     });
   }
 
-  // Authorization: Check ownership
   if (url.userId.toString() !== req.user._id.toString()) {
     return res.status(403).json({
       status: 'error',
@@ -341,18 +313,16 @@ export const getUrlQRCode = asyncHandler(async (req, res, next) => {
     });
   }
 
-  // Construct the short URL based on host domain
   const host = req.get('host');
   const domain = `${req.protocol}://${host}`;
   const shortUrl = `${domain}/${url.shortCode}`;
 
-  // Generate QR Code data URL (Base64 PNG)
   const qrCodeDataUrl = await QRCode.toDataURL(shortUrl, {
     width: 250,
     margin: 2,
     color: {
-      dark: '#0f172a', // slate-900
-      light: '#ffffff' // white
+      dark: '#0f172a',
+      light: '#ffffff'
     }
   });
 
@@ -373,7 +343,6 @@ export const getUrlQRCode = asyncHandler(async (req, res, next) => {
 export const getUrlStats = asyncHandler(async (req, res, next) => {
   const { shortCode } = req.params;
 
-  // 1. Find URL in database
   const url = await Url.findOne({ shortCode, isDeleted: false });
   if (!url) {
     return res.status(404).json({
@@ -382,28 +351,24 @@ export const getUrlStats = asyncHandler(async (req, res, next) => {
     });
   }
 
-  // 2. Fetch the most recent clicks to determine lastAccessed timestamp and get recent log details
   const recentClicks = await Click.find({ urlId: url._id })
     .sort({ clickedAt: -1 })
     .limit(10);
 
   const lastAccessed = recentClicks.length > 0 ? recentClicks[0].clickedAt : null;
 
-  // 3. Aggregate Click statistics by Browser
   const browserStats = await Click.aggregate([
     { $match: { urlId: url._id } },
     { $group: { _id: '$browser', count: { $sum: 1 } } },
     { $sort: { count: -1 } }
   ]);
 
-  // 4. Aggregate Click statistics by Referrer
   const referrerStats = await Click.aggregate([
     { $match: { urlId: url._id } },
     { $group: { _id: '$referrer', count: { $sum: 1 } } },
     { $sort: { count: -1 } }
   ]);
 
-  // 5. Structure stats output payload
   res.status(200).json({
     status: 'success',
     data: {
@@ -418,7 +383,7 @@ export const getUrlStats = asyncHandler(async (req, res, next) => {
       recentActivity: recentClicks.map(item => ({
         clickedAt: item.clickedAt,
         browser: item.browser,
-        ip: item.ip ? `${item.ip.split('.').slice(0, 2).join('.')}.*.*` : 'Unknown', // Anonymize IP for compliance
+        ip: item.ip ? `${item.ip.split('.').slice(0, 2).join('.')}.*.*` : 'Unknown',
         referrer: item.referrer
       }))
     }

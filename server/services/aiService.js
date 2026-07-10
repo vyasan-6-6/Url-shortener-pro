@@ -1,10 +1,8 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import dotenv from 'dotenv';
 
-// Load env variables immediately so this module can access the API key on import
 dotenv.config();
 
-// Initialize Gemini client (graceful fallback if API key is not set)
 let genAI = null;
 let model = null;
 
@@ -33,7 +31,6 @@ export const checkUrlSafety = async (url) => {
     initAI();
   }
   if (!genAI || !model) {
-    // Mock Safety Verification Fallback (Always returns safe unless it contains a dummy malicious keyword)
     const isMockMalicious = url.includes('malicious') || url.includes('phishing') || url.includes('hack-site');
     return {
       isSafe: !isMockMalicious,
@@ -44,7 +41,7 @@ export const checkUrlSafety = async (url) => {
   }
 
   try {
-    initAI(); // Ensure initialized (useful if env loads dynamically)
+    initAI();
     if (!model) throw new Error('Model not initialized');
 
     const prompt = `Analyze this destination URL: "${url}". 
@@ -59,7 +56,6 @@ Do not return any markdown formatting, backticks, or extra commentary. Just retu
     const result = await model.generateContent(prompt);
     const text = result.response.text().trim();
     
-    // Clean potential markdown codeblock formatting if Gemini ignores instructions
     const cleanJson = text.replace(/^```json\s*/i, '').replace(/\s*```$/i, '').trim();
     const data = JSON.parse(cleanJson);
     return {
@@ -68,7 +64,6 @@ Do not return any markdown formatting, backticks, or extra commentary. Just retu
     };
   } catch (error) {
     console.error('Gemini URL Safety Check Error:', error.message);
-    // Graceful fallback: permit URL if AI is temporarily unreachable
     return { isSafe: true, reason: 'AI Safety verification bypassed due to query error.' };
   }
 };
@@ -83,9 +78,8 @@ export const generateAliases = async (url) => {
     initAI();
   }
   if (!genAI || !model) {
-    // Mock Alias Generation Fallback
     try {
-      const hostname = new URL(url).hostname.replace('www.', '').split('.')[0];
+      const hostname = new URL(url).hostname.replace('www.', '').split('.')[0]; 
       return [`${hostname}-link`, `${hostname}-go`, `visit-${hostname}`];
     } catch (_) {
       return ['custom-link', 'go-link', 'my-shortcut'];
@@ -120,7 +114,6 @@ export const generateAnalyticsInsights = async (url, clicks) => {
     initAI();
   }
   if (!genAI || !model) {
-    // Mock Insights Fallback
     return `[MOCK AI INSIGHTS] Your link "/${url.shortCode}" directing to "${new URL(url.originalUrl).hostname}" has recorded ${url.clicks} total clicks. Most traffic appears to originate from direct channels. We recommend sharing the short link across social platforms like LinkedIn and Twitter during high-engagement hours (9 AM - 11 AM) to track browser variations.`;
   }
 
@@ -148,5 +141,4 @@ Your response must be written in a single natural paragraph (maximum 4 sentences
   }
 };
 
-// Trigger initial configuration check on startup
 initAI();

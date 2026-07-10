@@ -5,7 +5,6 @@ import aiRoutes from './aiRoutes.js';
 
 const router = express.Router();
 
-// Group and mount all sub-routers
 router.use('/auth', authRoutes);
 router.use('/urls', urlRoutes);
 router.use('/ai', aiRoutes);
