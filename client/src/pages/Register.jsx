@@ -5,7 +5,8 @@ import api from '../api/axios';
 import { toast } from 'react-hot-toast';
 import { User, Mail, Lock, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import { nameRules, emailRules, passwordRules } from '../utils/validationRules';
+import { yupResolver } from '@hookform/resolvers/yup';
+import { registerSchema } from '../utils/validationRules';
 
 function Register() {
   const { user, login } = useAuth();
@@ -24,7 +25,9 @@ function Register() {
     register,
     handleSubmit,
     formState: { errors }
-  } = useForm();
+  } = useForm({
+    resolver: yupResolver(registerSchema)
+  });
 
   const onSubmit = async (data) => {
     setSubmitting(true);
@@ -80,7 +83,7 @@ function Register() {
                 className={`w-full bg-slate-950 border ${
                   errors.name ? 'border-red-500' : 'border-slate-800'
                 } rounded-xl py-2.5 pl-10 pr-4 text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:border-violet-500 transition duration-150`}
-                {...register('name', nameRules)}
+                {...register('name')}
               />
             </div>
             {errors.name && (
@@ -101,7 +104,7 @@ function Register() {
                 className={`w-full bg-slate-950 border ${
                   errors.email ? 'border-red-500' : 'border-slate-800'
                 } rounded-xl py-2.5 pl-10 pr-4 text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:border-violet-500 transition duration-150`}
-                {...register('email', emailRules)}
+                {...register('email')}
               />
             </div>
             {errors.email && (
@@ -122,7 +125,7 @@ function Register() {
                 className={`w-full bg-slate-950 border ${
                   errors.password ? 'border-red-500' : 'border-slate-800'
                 } rounded-xl py-2.5 pl-10 pr-10 text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:border-violet-500 transition duration-150`}
-                {...register('password', passwordRules)}
+                {...register('password')}
               />
               <button
                 type="button"
