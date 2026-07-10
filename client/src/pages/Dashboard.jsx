@@ -185,6 +185,44 @@ function Dashboard() {
     });
   };
 
+  // Logout handler using custom interactive toast confirmation
+  const handleLogout = () => {
+    toast((t) => (
+      <div className="flex flex-col space-y-3 bg-slate-900 border border-slate-800 text-slate-100 p-4.5 rounded-2xl shadow-[0_15px_30px_rgba(0,0,0,0.5)] max-w-xs backdrop-blur-md">
+        <div className="flex items-center space-x-2.5">
+          <span className="text-violet-400 text-base animate-pulse">🚪</span>
+          <span className="text-xs font-semibold tracking-wide text-slate-200">Are you sure you want to logout?</span>
+        </div>
+        <div className="flex justify-end space-x-2 pt-1.5">
+          <button
+            onClick={() => {
+              toast.dismiss(t.id);
+              logout();
+            }}
+            className="px-3.5 py-1.5 bg-violet-600 hover:bg-violet-500 text-white text-[10px] font-bold rounded-lg transition hover:shadow-[0_0_10px_rgba(139,92,246,0.35)] cursor-pointer"
+          >
+            Logout
+          </button>
+          <button
+            onClick={() => toast.dismiss(t.id)}
+            className="px-3.5 py-1.5 bg-slate-800 hover:bg-slate-750 text-slate-400 hover:text-white text-[10px] font-bold rounded-lg transition border border-slate-700 cursor-pointer"
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    ), {
+      duration: 6000,
+      position: 'top-center',
+      style: {
+        background: 'transparent',
+        border: 'none',
+        boxShadow: 'none',
+        padding: 0
+      }
+    });
+  };
+
   // Edit Handlers
   const handleEditStart = (id, currentUrl) => {
     setEditingId(id);
@@ -221,7 +259,7 @@ function Dashboard() {
               <div className="text-xs text-slate-400">{user?.email}</div>
             </div>
             <button
-              onClick={logout}
+              onClick={handleLogout}
               className="flex items-center space-x-2 px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded-xl text-sm font-semibold transition duration-150 border border-slate-750"
             >
               <LogOut className="w-4 h-4" />
