@@ -1,4 +1,8 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import dotenv from 'dotenv';
+
+// Load env variables immediately so this module can access the API key on import
+dotenv.config();
 
 // Initialize Gemini client (graceful fallback if API key is not set)
 let genAI = null;
