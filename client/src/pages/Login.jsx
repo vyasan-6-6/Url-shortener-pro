@@ -1,16 +1,24 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../api/axios';
 import { toast } from 'react-hot-toast';
 import { Mail, Lock, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { emailRules, passwordRules } from '../utils/validationRules';
 
 function Login() {
-  const { login } = useAuth();
+  const { user, login } = useAuth();
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+
+  // Redirect to Dashboard if already logged in
+  useEffect(() => {
+    if (user) {
+      navigate('/');
+    }
+  }, [user, navigate]);
 
   const {
     register,
@@ -39,8 +47,8 @@ function Login() {
     } finally {
       setSubmitting(false);
     }
+  
   };
-
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-950 text-slate-100 px-4 py-12">
       <div className="max-w-md w-full bg-slate-900 border border-slate-800 rounded-2xl p-8 shadow-2xl space-y-6 backdrop-blur-md">
@@ -71,13 +79,7 @@ function Login() {
                 className={`w-full bg-slate-950 border ${
                   errors.email ? 'border-red-500' : 'border-slate-800'
                 } rounded-xl py-2.5 pl-10 pr-4 text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:border-violet-500 transition duration-150`}
-                {...register('email', {
-                  required: 'Email is required',
-                  pattern: {
-                    value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                    message: 'Invalid email address'
-                  }
-                })}
+                {...register('email', emailRules)}
               />
             </div>
             {errors.email && (
@@ -100,9 +102,7 @@ function Login() {
                 className={`w-full bg-slate-950 border ${
                   errors.password ? 'border-red-500' : 'border-slate-800'
                 } rounded-xl py-2.5 pl-10 pr-10 text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:border-violet-500 transition duration-150`}
-                {...register('password', {
-                  required: 'Password is required'
-                })}
+                {...register('password', passwordRules)}
               />
               <button
                 type="button"
