@@ -1,78 +1,71 @@
 import { generateAliases, generateAnalyticsInsights } from '../services/aiService.js';
 import Url from '../models/Url.js';
 import Click from '../models/Click.js';
+import asyncHandler from '../utils/asyncHandler.js';
 
 /**
  * @desc    Generate 3 suggested short aliases using Gemini AI
  * @route   POST /ai/aliases
  * @access  Private (Requires Authentication)
  */
-export const getAiAliases = async (req, res, next) => {
+export const getAiAliases = asyncHandler(async (req, res, next) => {
   const { originalUrl } = req.body;
 
-  try {
-    if (!originalUrl) {
-      return res.status(400).json({
-        status: 'error',
-        message: 'Please provide the original URL to generate aliases'
-      });
-    }
-
-    const aliases = await generateAliases(originalUrl);
-
-    res.status(200).json({
-      status: 'success',
-      data: aliases
+  if (!originalUrl) {
+    return res.status(400).json({
+      status: 'error',
+      message: 'Please provide the original URL to generate aliases'
     });
-  } catch (error) {
-    next(error);
   }
-};
+
+  const aliases = await generateAliases(originalUrl);
+
+  res.status(200).json({
+    status: 'success',
+    data: aliases
+  });
+});
 
 /**
  * @desc    Generate summary insights of click analytics logs using Gemini AI
  * @route   POST /ai/insights
  * @access  Private (Requires Authentication)
  */
-export const getAiInsights = async (req, res, next) => {
+export const getAiInsights = asyncHandler(async (req, res, next) => {
   const { urlId } = req.body;
 
-  try {
-    if (!urlId) {
-      return res.status(400).json({
-        status: 'error',
-        message: 'Please provide a urlId to fetch insights'
-      });
-    }
-
-    // 1. Fetch URL detail and check if it exists
-    const url = await Url.findById(urlId);
-    if (!url || url.isDeleted) {
-      return res.status(404).json({
-        status: 'error',
-        message: 'URL mapping not found'
-      });
-    }
-
-    // 2. Authorization: verify current user owns this URL
-    if (url.userId.toString() !== req.user._id.toString()) {
-      return res.status(403).json({
-        status: 'error',
-        message: 'You are not authorized to view insights for this URL'
-      });
-    }
-
-    // 3. Fetch Click records belonging to the URL
-    const clicks = await Click.find({ urlId: url._id }).sort({ clickedAt: -1 });
-
-    // 4. Call Gemini AI helper to generate traffic summaries
-    const insights = await generateAnalyticsInsights(url, clicks);
-
-    res.status(200).json({
-      status: 'success',
-      data: insights
+  if (!urlId) {
+    return res.status(400).json({
+      status: 'error',
+      message: 'Please provide a urlId to fetch insights'
     });
-  } catch (error) {
-    next(error);
   }
-};
+
+  // 1. Fetch URL detail and check if it exists
+  const url = await Url.findById(urlId);
+  if (!url || url.isDeleted) {
+    return res.status(404).json({
+      status: 'error',
+      message: 'URL mapping not found'
+    });
+  }
+
+  // 2. Authorization: verify current user owns this URL
+  if (url.userId.toString() !== req.user._id.toString()) {
+    return res.status(403).json({
+      status: 'error',
+      message: 'You are not authorized to view insights for this URL'
+    });
+  }
+
+  // 3. Fetch Click records belonging to the URL
+  const clicks = await Click.find({ urlId: url._id }).sort({ clickedAt: -1 });
+
+  // 4. Call Gemini AI helper to generate traffic summaries
+  const insights = await generateAnalyticsInsights(url, clicks);
+
+  res.status(200).json({
+    status: 'success',
+    data: insights
+  });
+});
