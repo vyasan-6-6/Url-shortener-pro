@@ -31,7 +31,8 @@ app.get('/health', (req, res) => {
   res.status(200).json({
     status: 'success',
     message: 'URL Shortener API is healthy and running',
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime()
   });
 });
 
