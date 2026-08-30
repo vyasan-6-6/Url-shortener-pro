@@ -11,6 +11,7 @@ import { errorHandler } from './middlewares/errorHandler.js';
 connectDB();
 
 const app = express();
+app.disable('x-powered-by');
 
 const allowedOrigins = [
   'http://localhost:5173',
