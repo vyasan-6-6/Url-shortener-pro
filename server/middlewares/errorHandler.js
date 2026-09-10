@@ -4,7 +4,7 @@
  */
 export const errorHandler = (err, req, res, next) => {
   // If the error has a status code, use it. Otherwise, default to 500 (Internal Server Error)
-  const statusCode = err.statusCode || res.statusCode === 200 ? 500 : res.statusCode || 500;
+  const statusCode = err.statusCode || (res.statusCode !== 200 ? res.statusCode : 500);
   
   console.error(`[Server Error] Path: ${req.path} | Message: ${err.message}`);
   
