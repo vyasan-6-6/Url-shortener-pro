@@ -1,7 +1,8 @@
 import React from 'react';
 import { AlertOctagon } from 'lucide-react';
+import type { FallbackProps } from 'react-error-boundary';
 
-function ErrorFallback({ error, resetErrorBoundary }) {
+const ErrorFallback: React.FC<FallbackProps> = ({ error, resetErrorBoundary }) => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-950 text-slate-100 px-4">
       <div className="max-w-md w-full bg-slate-900 border border-slate-800 rounded-2xl p-8 shadow-2xl text-center space-y-6 backdrop-blur-md">
@@ -17,11 +18,11 @@ function ErrorFallback({ error, resetErrorBoundary }) {
           <p className="text-xs text-slate-400 leading-relaxed">
             An unexpected JavaScript error occurred in the browser. We apologize for the inconvenience.
           </p>
-          {error && (
+          {error ? (
             <div className="bg-slate-950 border border-slate-800 p-3 rounded-lg text-[10px] text-red-400 font-mono text-left max-h-24 overflow-auto break-all">
-              {error.message || error.toString()}
+              {error instanceof Error ? error.message : String(error)}
             </div>
-          )}
+          ) : null}
         </div>
 
         {/* Action Button */}
@@ -42,6 +43,6 @@ function ErrorFallback({ error, resetErrorBoundary }) {
       </div>
     </div>
   );
-}
+};
 
 export default ErrorFallback;

@@ -2,12 +2,20 @@ import { useState } from 'react';
 import { getQrCode } from '../services/urlService';
 import { toast } from 'react-hot-toast';
 
-export const useQrCode = () => {
-  const [activeQrUrl, setActiveQrUrl] = useState(null);
-  const [activeQrCode, setActiveQrCode] = useState('');
-  const [loadingQrId, setLoadingQrId] = useState(null);
+export interface UseQrCodeReturn {
+  activeQrUrl: string | null;
+  activeQrCode: string;
+  loadingQrId: string | null;
+  handleViewQr: (id: string, code: string) => Promise<void>;
+  closeQr: () => void;
+}
 
-  const handleViewQr = async (id, code) => {
+export const useQrCode = (): UseQrCodeReturn => {
+  const [activeQrUrl, setActiveQrUrl] = useState<string | null>(null);
+  const [activeQrCode, setActiveQrCode] = useState<string>('');
+  const [loadingQrId, setLoadingQrId] = useState<string | null>(null);
+
+  const handleViewQr = async (id: string, _code: string): Promise<void> => {
     setLoadingQrId(id);
     try {
       const responseData = await getQrCode(id);
@@ -23,7 +31,7 @@ export const useQrCode = () => {
     }
   };
 
-  const closeQr = () => {
+  const closeQr = (): void => {
     setActiveQrUrl(null);
     setActiveQrCode('');
   };

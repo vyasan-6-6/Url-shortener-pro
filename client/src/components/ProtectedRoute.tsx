@@ -1,12 +1,16 @@
-import React from 'react';
+import React, { type ReactNode } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Loader2 } from 'lucide-react';
 
+interface ProtectedRouteProps {
+  children: ReactNode;
+}
+
 /**
  * Route guard component to restrict access to authenticated users
  */
-const ProtectedRoute = ({ children }) => {
+const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   const { user, loading } = useAuth();
 
   // Show a premium loading screen if auth state is being verified
@@ -24,7 +28,7 @@ const ProtectedRoute = ({ children }) => {
     return <Navigate to="/login" replace />;
   }
 
-  return children;
+  return <>{children}</>;
 };
 
 export default ProtectedRoute;

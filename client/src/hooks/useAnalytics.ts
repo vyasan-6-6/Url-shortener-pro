@@ -1,13 +1,22 @@
 import { useState } from 'react';
 import { getUrlStats } from '../services/urlService';
 import { toast } from 'react-hot-toast';
+import type { UrlStatsResponseData } from '../types';
 
-export const useAnalytics = () => {
-  const [activeStatsData, setActiveStatsData] = useState(null);
-  const [activeStatsCode, setActiveStatsCode] = useState('');
-  const [loadingStatsId, setLoadingStatsId] = useState(null);
+export interface UseAnalyticsReturn {
+  activeStatsData: UrlStatsResponseData | null;
+  activeStatsCode: string;
+  loadingStatsId: string | null;
+  handleViewStats: (id: string, code: string) => Promise<void>;
+  closeStats: () => void;
+}
 
-  const handleViewStats = async (id, code) => {
+export const useAnalytics = (): UseAnalyticsReturn => {
+  const [activeStatsData, setActiveStatsData] = useState<UrlStatsResponseData | null>(null);
+  const [activeStatsCode, setActiveStatsCode] = useState<string>('');
+  const [loadingStatsId, setLoadingStatsId] = useState<string | null>(null);
+
+  const handleViewStats = async (id: string, code: string): Promise<void> => {
     setLoadingStatsId(id);
     setActiveStatsData(null);
     try {
@@ -24,7 +33,7 @@ export const useAnalytics = () => {
     }
   };
 
-  const closeStats = () => {
+  const closeStats = (): void => {
     setActiveStatsData(null);
     setActiveStatsCode('');
   };

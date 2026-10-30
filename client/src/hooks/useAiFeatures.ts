@@ -2,14 +2,26 @@ import { useState } from 'react';
 import { getAiAliases, getAiInsights } from '../services/aiService';
 import { toast } from 'react-hot-toast';
 
-export const useAiFeatures = () => {
-  const [aiSuggestions, setAiSuggestions] = useState([]);
-  const [generatingAliases, setGeneratingAliases] = useState(false);
-  const [activeInsightsText, setActiveInsightsText] = useState('');
-  const [activeInsightsCode, setActiveInsightsCode] = useState('');
-  const [loadingInsightsId, setLoadingInsightsId] = useState(null);
+export interface UseAiFeaturesReturn {
+  aiSuggestions: string[];
+  generatingAliases: boolean;
+  activeInsightsText: string;
+  activeInsightsCode: string;
+  loadingInsightsId: string | null;
+  handleGenerateAiAliases: (originalUrl: string) => Promise<void>;
+  handleViewInsights: (id: string, code: string) => Promise<void>;
+  closeInsights: () => void;
+  clearSuggestions: () => void;
+}
 
-  const handleGenerateAiAliases = async (originalUrl) => {
+export const useAiFeatures = (): UseAiFeaturesReturn => {
+  const [aiSuggestions, setAiSuggestions] = useState<string[]>([]);
+  const [generatingAliases, setGeneratingAliases] = useState<boolean>(false);
+  const [activeInsightsText, setActiveInsightsText] = useState<string>('');
+  const [activeInsightsCode, setActiveInsightsCode] = useState<string>('');
+  const [loadingInsightsId, setLoadingInsightsId] = useState<string | null>(null);
+
+  const handleGenerateAiAliases = async (originalUrl: string): Promise<void> => {
     if (!originalUrl) {
       toast.error('Please enter a destination URL first');
       return;
@@ -22,7 +34,7 @@ export const useAiFeatures = () => {
         setAiSuggestions(responseData.data);
         toast.success('AI suggestions loaded!');
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('AI alias error:', error);
       toast.error('Failed to generate AI alias suggestions');
     } finally {
@@ -30,7 +42,7 @@ export const useAiFeatures = () => {
     }
   };
 
-  const handleViewInsights = async (id, code) => {
+  const handleViewInsights = async (id: string, code: string): Promise<void> => {
     setLoadingInsightsId(id);
     setActiveInsightsText('');
     try {
@@ -40,7 +52,7 @@ export const useAiFeatures = () => {
         setActiveInsightsCode(code);
         toast.success('AI insights generated!');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Insights generation error:', error);
       const errMsg = error.response?.data?.message || 'Failed to generate AI analytics insights';
       toast.error(errMsg);
@@ -49,12 +61,12 @@ export const useAiFeatures = () => {
     }
   };
 
-  const closeInsights = () => {
+  const closeInsights = (): void => {
     setActiveInsightsText('');
     setActiveInsightsCode('');
   };
 
-  const clearSuggestions = () => {
+  const clearSuggestions = (): void => {
     setAiSuggestions([]);
   };
 
