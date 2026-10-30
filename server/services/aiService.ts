@@ -1,19 +1,20 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { GoogleGenerativeAI, GenerativeModel } from '@google/generative-ai';
 import dotenv from 'dotenv';
+import { IUrl, IClick } from '../types';
 
 dotenv.config();
 
-let genAI = null;
-let model = null;
+let genAI: GoogleGenerativeAI | null = null;
+let model: GenerativeModel | null = null;
 
-const initAI = () => {
+const initAI = (): void => {
   const apiKey = process.env.GEMINI_API_KEY;
   if (apiKey && apiKey !== 'YOUR_GEMINI_API_KEY_HERE') {
     try {
       genAI = new GoogleGenerativeAI(apiKey);
       model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
       console.log('Google Gemini AI Service Initialized successfully');
-    } catch (err) {
+    } catch (err: any) {
       console.error('Failed to initialize Google Gemini AI:', err.message);
     }
   } else {
@@ -21,7 +22,12 @@ const initAI = () => {
   }
 };
 
-export const checkUrlSafety = async (url) => {
+export interface UrlSafetyResult {
+  isSafe: boolean;
+  reason: string;
+}
+
+export const checkUrlSafety = async (url: string): Promise<UrlSafetyResult> => {
   if (!genAI || !model) {
     initAI();
   }
@@ -57,13 +63,13 @@ Do not return any markdown formatting, backticks, or extra commentary. Just retu
       isSafe: typeof data.isSafe === 'boolean' ? data.isSafe : true,
       reason: data.reason || 'Safe URL'
     };
-  } catch (error) {
+  } catch (error: any) {
     console.error('Gemini URL Safety Check Error:', error.message);
     return { isSafe: true, reason: 'AI Safety verification bypassed due to query error.' };
   }
 };
 
-export const generateAliases = async (url) => {
+export const generateAliases = async (url: string): Promise<string[]> => {
   if (!genAI || !model) {
     initAI();
   }
@@ -87,13 +93,13 @@ Do not return any markdown formatting, backticks, or extra commentary. Just retu
     const text = result.response.text().trim();
     const cleanJson = text.replace(/^```json\s*/i, '').replace(/\s*```$/i, '').trim();
     return JSON.parse(cleanJson);
-  } catch (error) {
+  } catch (error: any) {
     console.error('Gemini Alias Generation Error:', error.message);
     return ['quick-url', 'go-shortcut', 'short-link'];
   }
 };
 
-export const generateAnalyticsInsights = async (url, clicks) => {
+export const generateAnalyticsInsights = async (url: IUrl, clicks: IClick[]): Promise<string> => {
   if (!genAI || !model) {
     initAI();
   }
@@ -119,7 +125,7 @@ Your response must be written in a single natural paragraph (maximum 4 sentences
 
     const result = await model.generateContent(prompt);
     return result.response.text().trim();
-  } catch (error) {
+  } catch (error: any) {
     console.error('Gemini Analytics Insights Error:', error.message);
     return 'Unable to generate AI analytical insights at this time. Please ensure click logs are populated and try again.';
   }

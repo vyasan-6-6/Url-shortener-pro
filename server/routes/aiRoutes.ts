@@ -1,6 +1,6 @@
 import express from 'express';
-import { getAiAliases, getAiInsights } from '../controllers/aiController.js';
-import { protect } from '../middlewares/authMiddleware.js';
+import { getAiAliases, getAiInsights } from '../controllers/aiController';
+import { protect } from '../middlewares/authMiddleware';
 
 const router = express.Router();
 
@@ -10,3 +10,4 @@ router.post('/aliases', getAiAliases);
 router.post('/insights', getAiInsights);
 
 export default router;
+

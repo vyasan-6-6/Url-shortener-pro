@@ -1,3 +1,4 @@
+import { Request, Response, NextFunction } from 'express';
 import rateLimit from 'express-rate-limit';
 
 const urlCreationLimiter = rateLimit({
@@ -11,10 +12,10 @@ const urlCreationLimiter = rateLimit({
   legacyHeaders: false,
 });
 
-export const limitUrlCreation = (req, res, next) => {
+export const limitUrlCreation = (req: Request, res: Response, next: NextFunction): void => {
   if (process.env.NODE_ENV === 'development') {
     console.log('[Rate Limiter] Bypassed URL creation check in development environment');
     return next();
   }
-  return urlCreationLimiter(req, res, next);
+  urlCreationLimiter(req, res, next);
 };

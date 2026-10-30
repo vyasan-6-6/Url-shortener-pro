@@ -3,10 +3,11 @@
   "version": "1.0.0",
   "description": "Backend API for URL Shortener Pro",
   "type": "module",
-  "main": "app.js",
+  "main": "app.ts",
   "scripts": {
-    "start": "node app.js",
-    "dev": "nodemon app.js"
+    "dev": "tsx watch app.ts",
+    "build": "tsc",
+    "start": "tsx app.ts"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",

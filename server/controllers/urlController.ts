@@ -1,12 +1,14 @@
-import Url from '../models/Url.js';
-import Click from '../models/Click.js';
-import { generateShortCode } from '../utils/generateShortCode.js';
+import { Request, Response, NextFunction } from 'express';
+import Url from '../models/Url';
+import Click from '../models/Click';
+import { generateShortCode } from '../utils/generateShortCode';
 import useragent from 'useragent';
 import QRCode from 'qrcode';
-import { checkUrlSafety } from '../services/aiService.js';
-import asyncHandler from '../utils/asyncHandler.js';
+import { checkUrlSafety } from '../services/aiService';
+import asyncHandler from '../utils/asyncHandler';
+import { AuthRequest } from '../types';
 
-const isValidUrl = (string) => {
+const isValidUrl = (string: string): boolean => {
   try {
     const url = new URL(string);
     return url.protocol === 'http:' || url.protocol === 'https:';
@@ -15,8 +17,15 @@ const isValidUrl = (string) => {
   }
 };
 
-export const createShortUrl = asyncHandler(async (req, res, next) => {
+export const createShortUrl = asyncHandler(async (req: AuthRequest, res: Response, _next: NextFunction): Promise<any> => {
   const { originalUrl, customAlias, expiresAt } = req.body;
+
+  if (!req.user) {
+    return res.status(401).json({
+      status: 'error',
+      message: 'Not authorized'
+    });
+  }
 
   if (!originalUrl) {
     return res.status(400).json({
@@ -40,7 +49,7 @@ export const createShortUrl = asyncHandler(async (req, res, next) => {
     });
   }
 
-  let code = customAlias ? customAlias.trim() : '';
+  let code = customAlias ? (customAlias as string).trim() : '';
 
   if (code) {
     const aliasRegex = /^[a-zA-Z0-9-_]+$/;
@@ -78,7 +87,7 @@ export const createShortUrl = asyncHandler(async (req, res, next) => {
     }
   }
 
-  let expirationDate = null;
+  let expirationDate: Date | null = null;
   if (expiresAt) {
     expirationDate = new Date(expiresAt);
     if (isNaN(expirationDate.getTime())) {
@@ -108,13 +117,20 @@ export const createShortUrl = asyncHandler(async (req, res, next) => {
   });
 });
 
-export const getUserUrls = asyncHandler(async (req, res, next) => {
-  const page = parseInt(req.query.page) || 1;
-  const limit = parseInt(req.query.limit) || 10;
-  const search = req.query.search || '';
+export const getUserUrls = asyncHandler(async (req: AuthRequest, res: Response, _next: NextFunction): Promise<any> => {
+  if (!req.user) {
+    return res.status(401).json({
+      status: 'error',
+      message: 'Not authorized'
+    });
+  }
+
+  const page = parseInt(req.query.page as string) || 1;
+  const limit = parseInt(req.query.limit as string) || 10;
+  const search = (req.query.search as string) || '';
   const skip = (page - 1) * limit;
 
-  const query = {
+  const query: any = {
     userId: req.user._id,
     isDeleted: false
   };
@@ -145,7 +161,7 @@ export const getUserUrls = asyncHandler(async (req, res, next) => {
   });
 });
 
-export const redirectToOriginal = asyncHandler(async (req, res, next) => {
+export const redirectToOriginal = asyncHandler(async (req: Request, res: Response, _next: NextFunction): Promise<any> => {
   const { shortCode } = req.params;
 
   const url = await Url.findOne({ shortCode, isDeleted: false });
@@ -180,8 +196,8 @@ export const redirectToOriginal = asyncHandler(async (req, res, next) => {
 
   const agent = useragent.parse(req.headers['user-agent'] || '');
   const browser = agent.family || 'Unknown';
-  const ip = req.ip || req.headers['x-forwarded-for'] || 'Unknown';
-  const referrer = req.headers['referer'] || 'Direct';
+  const ip = (req.ip || req.headers['x-forwarded-for'] || 'Unknown') as string;
+  const referrer = (req.headers['referer'] || 'Direct') as string;
 
   Click.create({
     urlId: url._id,
@@ -193,8 +209,15 @@ export const redirectToOriginal = asyncHandler(async (req, res, next) => {
   return res.redirect(302, url.originalUrl);
 });
 
-export const deleteUrl = asyncHandler(async (req, res, next) => {
+export const deleteUrl = asyncHandler(async (req: AuthRequest, res: Response, _next: NextFunction): Promise<any> => {
   const { id } = req.params;
+
+  if (!req.user) {
+    return res.status(401).json({
+      status: 'error',
+      message: 'Not authorized'
+    });
+  }
 
   const url = await Url.findById(id);
 
@@ -221,9 +244,16 @@ export const deleteUrl = asyncHandler(async (req, res, next) => {
   });
 });
 
-export const updateUrl = asyncHandler(async (req, res, next) => {
+export const updateUrl = asyncHandler(async (req: AuthRequest, res: Response, _next: NextFunction): Promise<any> => {
   const { id } = req.params;
   const { originalUrl } = req.body;
+
+  if (!req.user) {
+    return res.status(401).json({
+      status: 'error',
+      message: 'Not authorized'
+    });
+  }
 
   if (!originalUrl) {
     return res.status(400).json({
@@ -264,8 +294,15 @@ export const updateUrl = asyncHandler(async (req, res, next) => {
   });
 });
 
-export const getUrlQRCode = asyncHandler(async (req, res, next) => {
+export const getUrlQRCode = asyncHandler(async (req: AuthRequest, res: Response, _next: NextFunction): Promise<any> => {
   const { id } = req.params;
+
+  if (!req.user) {
+    return res.status(401).json({
+      status: 'error',
+      message: 'Not authorized'
+    });
+  }
 
   const url = await Url.findById(id);
 
@@ -305,7 +342,7 @@ export const getUrlQRCode = asyncHandler(async (req, res, next) => {
   });
 });
 
-export const getUrlStats = asyncHandler(async (req, res, next) => {
+export const getUrlStats = asyncHandler(async (req: Request, res: Response, _next: NextFunction): Promise<any> => {
   const { shortCode } = req.params;
 
   const url = await Url.findOne({ shortCode, isDeleted: false });
@@ -354,3 +391,4 @@ export const getUrlStats = asyncHandler(async (req, res, next) => {
     }
   });
 });
+

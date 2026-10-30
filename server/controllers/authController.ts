@@ -1,8 +1,9 @@
-import User from '../models/User.js';
-import generateToken from '../utils/generateToken.js';
-import asyncHandler from '../utils/asyncHandler.js';
+import { Request, Response, NextFunction } from 'express';
+import User from '../models/User';
+import generateToken from '../utils/generateToken';
+import asyncHandler from '../utils/asyncHandler';
 
-export const registerUser = asyncHandler(async (req, res, next) => {
+export const registerUser = asyncHandler(async (req: Request, res: Response, _next: NextFunction): Promise<any> => {
   const { name, email, password } = req.body;
 
   if (!name || !email || !password) {
@@ -26,7 +27,7 @@ export const registerUser = asyncHandler(async (req, res, next) => {
     password
   });
 
-  const token = generateToken(user._id);
+  const token = generateToken(user._id.toString());
 
   res.status(201).json({
     status: 'success',
@@ -41,7 +42,7 @@ export const registerUser = asyncHandler(async (req, res, next) => {
   });
 });
 
-export const loginUser = asyncHandler(async (req, res, next) => {
+export const loginUser = asyncHandler(async (req: Request, res: Response, _next: NextFunction): Promise<any> => {
   const { email, password } = req.body;
 
   if (!email || !password) {
@@ -67,7 +68,7 @@ export const loginUser = asyncHandler(async (req, res, next) => {
     });
   }
 
-  const token = generateToken(user._id);
+  const token = generateToken(user._id.toString());
 
   res.status(200).json({
     status: 'success',

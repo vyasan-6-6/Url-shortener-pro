@@ -1,6 +1,7 @@
+import { Request, Response, NextFunction } from 'express';
 import { body, validationResult } from 'express-validator';
 
-export const validate = (req, res, next) => {
+export const validate = (req: Request, res: Response, next: NextFunction): any => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res.status(400).json({
@@ -47,14 +48,14 @@ export const urlRules = [
     .isURL()
     .withMessage('Please provide a valid URL pattern (e.g. http://example.com)'),
   body('customAlias')
-    .optional({ checkFalsy: true })
+    .optional({ values: 'falsy' })
     .trim()
     .matches(/^[a-zA-Z0-9-_]+$/)
     .withMessage('Custom alias must contain only letters, numbers, dashes, or underscores')
     .isLength({ min: 3, max: 30 })
     .withMessage('Custom alias must be between 3 and 30 characters long'),
   body('expiresAt')
-    .optional({ checkFalsy: true })
+    .optional({ values: 'falsy' })
     .isISO8601()
     .withMessage('Expiration date must be a valid ISO 8601 date format')
 ];

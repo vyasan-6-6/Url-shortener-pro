@@ -1,9 +1,11 @@
-import { generateAliases, generateAnalyticsInsights } from '../services/aiService.js';
-import Url from '../models/Url.js';
-import Click from '../models/Click.js';
-import asyncHandler from '../utils/asyncHandler.js';
+import { Response, NextFunction } from 'express';
+import { generateAliases, generateAnalyticsInsights } from '../services/aiService';
+import Url from '../models/Url';
+import Click from '../models/Click';
+import asyncHandler from '../utils/asyncHandler';
+import { AuthRequest } from '../types';
 
-export const getAiAliases = asyncHandler(async (req, res, next) => {
+export const getAiAliases = asyncHandler(async (req: AuthRequest, res: Response, _next: NextFunction): Promise<any> => {
   const { originalUrl } = req.body;
 
   if (!originalUrl) {
@@ -21,7 +23,7 @@ export const getAiAliases = asyncHandler(async (req, res, next) => {
   });
 });
 
-export const getAiInsights = asyncHandler(async (req, res, next) => {
+export const getAiInsights = asyncHandler(async (req: AuthRequest, res: Response, _next: NextFunction): Promise<any> => {
   const { urlId } = req.body;
 
   if (!urlId) {
@@ -39,7 +41,7 @@ export const getAiInsights = asyncHandler(async (req, res, next) => {
     });
   }
 
-  if (url.userId.toString() !== req.user._id.toString()) {
+  if (!req.user || url.userId.toString() !== req.user._id.toString()) {
     return res.status(403).json({
       status: 'error',
       message: 'You are not authorized to view insights for this URL'

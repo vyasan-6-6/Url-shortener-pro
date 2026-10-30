@@ -1,8 +1,19 @@
+import { Request, Response, NextFunction } from 'express';
+
+interface CustomError extends Error {
+  statusCode?: number;
+}
+
 /**
  * Express Global Error Handling Middleware
  * Intercepts any uncaught errors passed via next(error) and formats them as JSON
  */
-export const errorHandler = (err, req, res, next) => {
+export const errorHandler = (
+  err: CustomError, 
+  req: Request, 
+  res: Response, 
+  _next: NextFunction
+): void => {
   // If the error has a status code, use it. Otherwise, default to 500 (Internal Server Error)
   const statusCode = err.statusCode || (res.statusCode !== 200 ? res.statusCode : 500);
   

@@ -1,11 +1,14 @@
 import express from 'express';
-import { 
-  createShortUrl, getUserUrls, deleteUrl, 
-  updateUrl, getUrlQRCode 
-} from '../controllers/urlController.js';
-import { urlRules, validate } from '../middlewares/validator.js';
-import { limitUrlCreation } from '../middlewares/rateLimiter.js';
-import { protect } from '../middlewares/authMiddleware.js';
+import {
+  createShortUrl,
+  getUserUrls,
+  deleteUrl,
+  updateUrl,
+  getUrlQRCode
+} from '../controllers/urlController';
+import { urlRules, validate } from '../middlewares/validator';
+import { limitUrlCreation } from '../middlewares/rateLimiter';
+import { protect } from '../middlewares/authMiddleware';
 
 const router = express.Router();
 
@@ -18,3 +21,4 @@ router.put('/:id', urlRules, validate, updateUrl);
 router.get('/:id/qrcode', getUrlQRCode);
 
 export default router;
+

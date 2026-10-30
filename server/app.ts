@@ -1,12 +1,12 @@
 import dotenv from 'dotenv';
 dotenv.config();
 
-import express from 'express';
+import express, { Request, Response } from 'express';
 import cors from 'cors';
-import connectDB from './config/db.js';
-import apiRoutes from './routes/index.js';
-import { redirectToOriginal, getUrlStats } from './controllers/urlController.js';
-import { errorHandler } from './middlewares/errorHandler.js';
+import connectDB from './config/db';
+import apiRoutes from './routes';
+import { redirectToOriginal, getUrlStats } from './controllers/urlController';
+import { errorHandler } from './middlewares/errorHandler';
 
 connectDB();
 
@@ -17,7 +17,7 @@ const allowedOrigins = [
   'http://localhost:5173',
   'http://127.0.0.1:5173',
   process.env.CLIENT_URL
-].filter(Boolean);
+].filter(Boolean) as string[];
 
 app.use(cors({
   origin: allowedOrigins,
@@ -28,7 +28,7 @@ app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 
 app.use('/', apiRoutes);
 
-app.get('/health', (req, res) => {
+app.get('/health', (_req: Request, res: Response) => {
   res.status(200).json({
     status: 'success',
     message: 'URL Shortener API is healthy and running',
@@ -40,7 +40,7 @@ app.get('/health', (req, res) => {
 app.get('/stats/:shortCode', getUrlStats);
 app.get('/:shortCode', redirectToOriginal);
 
-app.use((req, res, next) => {
+app.use((req: Request, res: Response) => {
   res.status(404).json({
     status: 'error',
     message: `Route not found: ${req.originalUrl}`
@@ -53,3 +53,6 @@ const PORT = process.env.PORT || 8000;
 app.listen(PORT, () => {
   console.log(`Server is running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}`);
 });
+
+export default app;
+
