@@ -1,9 +1,10 @@
-import mongoose from 'mongoose';
+import mongoose, { Schema, Model } from 'mongoose';
+import { IClick } from '../types';
 
-const clickSchema = new mongoose.Schema(
+const clickSchema = new Schema<IClick>(
   {
     urlId: {
-      type: mongoose.Schema.Types.ObjectId,
+      type: Schema.Types.ObjectId,
       ref: 'Url',
       required: true
     },
@@ -29,5 +30,5 @@ const clickSchema = new mongoose.Schema(
 // Index on urlId for high-performance retrieval of analytics for a specific link
 clickSchema.index({ urlId: 1 });
 
-const Click = mongoose.model('Click', clickSchema);
+const Click: Model<IClick> = mongoose.model<IClick>('Click', clickSchema);
 export default Click;

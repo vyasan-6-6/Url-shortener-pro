@@ -10,7 +10,7 @@ const CODE_LENGTH = 6;
  * Generate a unique alphanumeric short code
  * @returns {string} Random 6-character string
  */
-export const generateShortCode = () => {
+export const generateShortCode = (): string => {
   const nanoid = customAlphabet(ALPHABET, CODE_LENGTH);
   return nanoid();
 };

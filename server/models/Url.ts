@@ -1,6 +1,7 @@
-import mongoose from 'mongoose';
+import mongoose, { Schema, Model } from 'mongoose';
+import { IUrl } from '../types';
 
-const urlSchema = new mongoose.Schema(
+const urlSchema = new Schema<IUrl>(
   {
     originalUrl: {
       type: String,
@@ -14,7 +15,7 @@ const urlSchema = new mongoose.Schema(
       trim: true
     },
     userId: {
-      type: mongoose.Schema.Types.ObjectId,
+      type: Schema.Types.ObjectId,
       ref: 'User',
       required: true
     },
@@ -32,9 +33,9 @@ const urlSchema = new mongoose.Schema(
     }
   },
   {
-    timestamps: true // Automatically adds createdAt and updatedAt
+    timestamps: true
   }
 );
 
-const Url = mongoose.model('Url', urlSchema);
+const Url: Model<IUrl> = mongoose.model<IUrl>('Url', urlSchema);
 export default Url;

@@ -1,7 +1,8 @@
-import mongoose from 'mongoose';
+import mongoose, { Schema, Model } from 'mongoose';
 import bcrypt from 'bcryptjs';
+import { IUser } from '../types';
 
-const userSchema = new mongoose.Schema(
+const userSchema = new Schema<IUser>(
   {
     name: {
       type: String,
@@ -24,35 +25,34 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: [true, 'Please provide a password'],
       minlength: [6, 'Password must be at least 6 characters'],
-      select: false // Exclude password from query results by default for security
+      select: false
     }
   },
   {
-    timestamps: true // Automatically adds createdAt and updatedAt fields
+    timestamps: true
   }
 );
 
 // Pre-save middleware to hash password before storing in database
 userSchema.pre('save', async function (next) {
-  // Only hash the password if it has been modified or is new
   if (!this.isModified('password')) return next();
 
   try {
-    // Generate a salt (random sequence) with 10 rounds of processing
     const salt = await bcrypt.genSalt(10);
-    // Hash the password using the generated salt
-    this.password = await bcrypt.hash(this.password, salt);
+    if (this.password) {
+      this.password = await bcrypt.hash(this.password, salt);
+    }
     next();
-  } catch (error) {
+  } catch (error: any) {
     next(error);
   }
 });
 
 // Method to verify passwords during login
-userSchema.methods.comparePassword = async function (enteredPassword) {
-  // Compares entering plaintext password with the hashed password stored in DB
+userSchema.methods.comparePassword = async function (enteredPassword: string): Promise<boolean> {
+  if (!this.password) return false;
   return await bcrypt.compare(enteredPassword, this.password);
 };
 
-const User = mongoose.model('User', userSchema);
+const User: Model<IUser> = mongoose.model<IUser>('User', userSchema);
 export default User;
