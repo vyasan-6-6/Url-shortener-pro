@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios, { type InternalAxiosRequestConfig } from 'axios';
 
 // API Base URL (loads from Vite environmental variables, falling back to local port)
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
@@ -11,11 +11,10 @@ const api = axios.create({
 });
 
 // Request Interceptor: Automatically inject JWT token from localStorage into Authorization headers
- 
 api.interceptors.request.use(
-  (config) => {
+  (config: InternalAxiosRequestConfig) => {
     const token = localStorage.getItem('token');
-    if (token) {
+    if (token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`;
     }
     return config;

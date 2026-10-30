@@ -1,7 +1,7 @@
 import * as yup from 'yup';
 
 // 1. Validation Schema for User Registration form
-export const registerSchema = yup.object().shape({
+export const registerSchema = yup.object({
   name: yup
     .string()
     .required('Name is required')
@@ -16,8 +16,10 @@ export const registerSchema = yup.object().shape({
     .min(6, 'Password must be at least 6 characters long')
 });
 
+export type RegisterFormData = yup.InferType<typeof registerSchema>;
+
 // 2. Validation Schema for User Login form
-export const loginSchema = yup.object().shape({
+export const loginSchema = yup.object({
   email: yup
     .string()
     .required('Email is required')
@@ -27,3 +29,5 @@ export const loginSchema = yup.object().shape({
     .required('Password is required')
     .min(6, 'Password must be at least 6 characters long')
 });
+
+export type LoginFormData = yup.InferType<typeof loginSchema>;
