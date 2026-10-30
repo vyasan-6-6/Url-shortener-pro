@@ -34,12 +34,20 @@ export interface UrlItem {
   user?: string;
 }
 
+// Pagination Meta Info
+export interface PaginationInfo {
+  page: number;
+  limit: number;
+  totalPages: number;
+  totalItems: number;
+}
+
 // Paginated URL List Response Structure
 export interface UrlListResponse {
-  urls: UrlItem[];
-  totalPages: number;
-  currentPage: number;
-  totalUrls: number;
+  status: 'success' | 'error' | 'fail';
+  results: number;
+  pagination: PaginationInfo;
+  data: UrlItem[];
 }
 
 // Create URL Request Payload
@@ -55,27 +63,33 @@ export interface QrCodeResponseData {
   shortUrl: string;
 }
 
-// Click Record for Analytics
-export interface ClickItem {
-  _id?: string;
-  ipAddress?: string;
-  userAgent?: string;
-  referrer?: string;
-  timestamp: string;
-  device?: string;
-  browser?: string;
-  os?: string;
-  location?: string;
+// Analytics Breakdown Sub-types
+export interface BrowserStat {
+  browser: string;
+  count: number;
+}
+
+export interface ReferrerStat {
+  referrer: string;
+  count: number;
+}
+
+export interface RecentActivityItem {
+  clickedAt: string;
+  browser: string;
+  ip: string;
+  referrer: string;
 }
 
 // Comprehensive URL Analytics Response Data
 export interface UrlStatsResponseData {
-  url: UrlItem;
-  totalClicks: number;
-  clicks: ClickItem[];
-  analytics?: {
-    devices?: Record<string, number>;
-    browsers?: Record<string, number>;
-    referrers?: Record<string, number>;
-  };
+  shortCode: string;
+  originalUrl: string;
+  clicksCount: number;
+  createdAt: string;
+  expiresAt?: string;
+  lastAccessed: string | null;
+  browsers: BrowserStat[];
+  referrers: ReferrerStat[];
+  recentActivity: RecentActivityItem[];
 }

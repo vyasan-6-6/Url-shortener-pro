@@ -10,7 +10,7 @@ const Dashboard = lazy(() => import('./pages/Dashboard'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 const ServerError = lazy(() => import('./pages/ServerError'));
 
-function App() {
+const App: React.FC = () => {
   return (
     <Router>
       {/* Premium Toast Notification Pop-ups container */}
@@ -64,6 +64,6 @@ function App() {
       </Suspense>
     </Router>
   );
-}
+};
 
 export default App;

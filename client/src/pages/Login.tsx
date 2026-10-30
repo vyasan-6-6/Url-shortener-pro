@@ -1,18 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, type SubmitHandler } from 'react-hook-form';
 import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import { Mail, Lock, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { loginSchema } from '../utils/validationRules';
+import { loginSchema, type LoginFormData } from '../utils/validationRules';
 import { login as loginService } from '../services/authService';
 
-function Login() {
+const Login: React.FC = () => {
   const { user, login } = useAuth();
   const navigate = useNavigate();
-  const [showPassword, setShowPassword] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
+  const [showPassword, setShowPassword] = useState<boolean>(false);
+  const [submitting, setSubmitting] = useState<boolean>(false);
 
   // Redirect to Dashboard if already logged in
   useEffect(() => {
@@ -25,11 +25,11 @@ function Login() {
     register,
     handleSubmit,
     formState: { errors }
-  } = useForm({
+  } = useForm<LoginFormData>({
     resolver: yupResolver(loginSchema)
   });
 
-  const onSubmit = async (data) => {
+  const onSubmit: SubmitHandler<LoginFormData> = async (data) => {
     setSubmitting(true);
     try {
       const resData = await loginService(data.email, data.password);
@@ -40,15 +40,15 @@ function Login() {
         toast.success(`Welcome back, ${user.name}!`);
         navigate('/');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Login error:', error);
       const errMsg = error.response?.data?.message || 'Invalid email or password. Please try again.';
       toast.error(errMsg);
     } finally {
       setSubmitting(false);
     }
-  
   };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-950 text-slate-100 px-4 py-12">
       <div className="max-w-md w-full bg-slate-900 border border-slate-800 rounded-2xl p-8 shadow-2xl space-y-6 backdrop-blur-md">
@@ -147,6 +147,6 @@ function Login() {
       </div>
     </div>
   );
-}
+};
 
 export default Login;

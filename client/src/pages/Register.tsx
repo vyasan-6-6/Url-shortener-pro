@@ -1,18 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, type SubmitHandler } from 'react-hook-form';
 import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import { User, Mail, Lock, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { registerSchema } from '../utils/validationRules';
+import { registerSchema, type RegisterFormData } from '../utils/validationRules';
 import { register as registerService } from '../services/authService';
 
-function Register() {
+const Register: React.FC = () => {
   const { user, login } = useAuth();
   const navigate = useNavigate();
-  const [showPassword, setShowPassword] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
+  const [showPassword, setShowPassword] = useState<boolean>(false);
+  const [submitting, setSubmitting] = useState<boolean>(false);
 
   // Redirect to Dashboard if already logged in
   useEffect(() => {
@@ -25,11 +25,11 @@ function Register() {
     register,
     handleSubmit,
     formState: { errors }
-  } = useForm({
+  } = useForm<RegisterFormData>({
     resolver: yupResolver(registerSchema)
   });
 
-  const onSubmit = async (data) => {
+  const onSubmit: SubmitHandler<RegisterFormData> = async (data) => {
     setSubmitting(true);
     try {
       const resData = await registerService(data.name, data.email, data.password);
@@ -40,7 +40,7 @@ function Register() {
         toast.success(`Welcome, ${user.name}! Account created successfully.`);
         navigate('/');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Registration error:', error);
       const errMsg = error.response?.data?.message || 'Failed to create account. Please try again.';
       toast.error(errMsg);
@@ -166,6 +166,6 @@ function Register() {
       </div>
     </div>
   );
-}
+};
 
 export default Register;

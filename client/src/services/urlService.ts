@@ -20,8 +20,8 @@ export const getUrls = async (
   page: number, 
   limit: number, 
   search?: string
-): Promise<ApiResponse<UrlListResponse>> => {
-  const response = await api.get<ApiResponse<UrlListResponse>>('/urls', {
+): Promise<UrlListResponse> => {
+  const response = await api.get<UrlListResponse>('/urls', {
     params: { page, limit, search }
   });
   return response.data;

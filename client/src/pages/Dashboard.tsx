@@ -6,31 +6,33 @@ import { useQrCode } from '../hooks/useQrCode';
 import { useAiFeatures } from '../hooks/useAiFeatures';
 import { useAnalytics } from '../hooks/useAnalytics';
 import { createUrl, getUrls, deleteUrl, updateUrl } from '../services/urlService';
+import type { UrlItem, CreateUrlPayload } from '../types';
 import { 
   LogOut, Link2, PlusCircle, ExternalLink, BarChart3, 
   Clock, Trash2, Edit2, QrCode, Search, Copy, Check, 
-  ChevronLeft, ChevronRight, Calendar, Loader2, Sparkles 
+  ChevronLeft, ChevronRight, Loader2, Sparkles 
 } from 'lucide-react';
 
-function Dashboard() {
+const Dashboard: React.FC = () => {
   const { user, logout, API_URL } = useAuth();
   const queryClient = useQueryClient();
 
   // Search & Pagination States
-  const [search, setSearch] = useState('');
-  const [page, setPage] = useState(1);
-  const [limit] = useState(6);
+  const [search, setSearch] = useState<string>('');
+  const [page, setPage] = useState<number>(1);
+  const [limit] = useState<number>(6);
 
   // Form Inputs
-  const [originalUrl, setOriginalUrl] = useState('');
-  const [customAlias, setCustomAlias] = useState('');
-  const [expiresAt, setExpiresAt] = useState('');
+  const [originalUrl, setOriginalUrl] = useState<string>('');
+  const [customAlias, setCustomAlias] = useState<string>('');
+  const [expiresAt, setExpiresAt] = useState<string>('');
 
   // UI States
-  const [copiedCode, setCopiedCode] = useState('');
-  const [showAdvanced, setShowAdvanced] = useState(false);
-  const [editingId, setEditingId] = useState(null);
-  const [editUrlValue, setEditUrlValue] = useState('');
+  const [copiedCode, setCopiedCode] = useState<string>('');
+  const [showAdvanced, setShowAdvanced] = useState<boolean>(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editUrlValue, setEditUrlValue] = useState<string>('');
+
   // Consolidated local states and operations using Custom Hooks
   const {
     activeQrUrl,
@@ -60,23 +62,23 @@ function Dashboard() {
     closeStats
   } = useAnalytics();
 
-  const { data: urlData, isLoading, isError, refetch } = useQuery({
+  const { data: urlData, isLoading, isError } = useQuery({
     queryKey: ['urls', page, search],
     queryFn: () => getUrls(page, limit, search),
-    keepPreviousData: true
+    placeholderData: (previousData) => previousData
   });
 
   // 2. React Query: Create URL Mutation
   const createMutation = useMutation({
-    mutationFn: createUrl,
+    mutationFn: (payload: CreateUrlPayload) => createUrl(payload),
     onSuccess: () => {
       toast.success('Short URL created successfully!');
       setOriginalUrl('');
       setCustomAlias('');
       setExpiresAt('');
-      queryClient.invalidateQueries(['urls']); // Auto-refresh URL list
+      queryClient.invalidateQueries({ queryKey: ['urls'] }); // Auto-refresh URL list
     },
-    onError: (error) => {
+    onError: (error: any) => {
       const errMsg = error.response?.data?.message || 'Failed to create short URL';
       toast.error(errMsg);
     }
@@ -84,31 +86,31 @@ function Dashboard() {
 
   // 3. React Query: Delete URL Mutation
   const deleteMutation = useMutation({
-    mutationFn: deleteUrl,
+    mutationFn: (id: string) => deleteUrl(id),
     onSuccess: () => {
       toast.success('Link deleted successfully');
-      queryClient.invalidateQueries(['urls']);
+      queryClient.invalidateQueries({ queryKey: ['urls'] });
     },
-    onError: (error) => {
+    onError: (error: any) => {
       toast.error(error.response?.data?.message || 'Failed to delete link');
     }
   });
 
   // 4. React Query: Edit URL Mutation
   const editMutation = useMutation({
-    mutationFn: ({ id, originalUrl }) => updateUrl(id, originalUrl),
+    mutationFn: ({ id, originalUrl }: { id: string; originalUrl: string }) => updateUrl(id, originalUrl),
     onSuccess: () => {
       toast.success('Link updated successfully');
       setEditingId(null);
       setEditUrlValue('');
-      queryClient.invalidateQueries(['urls']);
+      queryClient.invalidateQueries({ queryKey: ['urls'] });
     },
-    onError: (error) => {
+    onError: (error: any) => {
       toast.error(error.response?.data?.message || 'Failed to update link');
     }
   });
 
-  const handleShortenSubmit = (e) => {
+  const handleShortenSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!originalUrl) {
       toast.error('Please enter a destination URL');
@@ -122,7 +124,7 @@ function Dashboard() {
   };
 
   // Copy Short URL to clipboard utility
-  const handleCopy = (code) => {
+  const handleCopy = (code: string) => {
     const shortUrl = `${API_URL}/${code}`;
     navigator.clipboard.writeText(shortUrl);
     setCopiedCode(code);
@@ -131,7 +133,7 @@ function Dashboard() {
   };
 
   // Format date safely for display
-  const formatDate = (dateString) => {
+  const formatDate = (dateString?: string) => {
     if (!dateString) return 'Never';
     const date = new Date(dateString);
     return date.toLocaleDateString(undefined, {
@@ -142,13 +144,13 @@ function Dashboard() {
   };
 
   // Check if link is expired
-  const isExpired = (expiresAtString) => {
+  const isExpired = (expiresAtString?: string) => {
     if (!expiresAtString) return false;
     return new Date(expiresAtString) < new Date();
   };
 
   // Delete handler using custom interactive toast confirmation
-  const handleDelete = (id) => {
+  const handleDelete = (id: string) => {
     toast((t) => (
       <div className="flex flex-col space-y-3 bg-slate-900 border border-slate-800 text-slate-100 p-4.5 rounded-2xl shadow-[0_15px_30px_rgba(0,0,0,0.5)] max-w-xs backdrop-blur-md">
         <div className="flex items-center space-x-2.5">
@@ -224,20 +226,18 @@ function Dashboard() {
   };
 
   // Edit Handlers
-  const handleEditStart = (id, currentUrl) => {
+  const handleEditStart = (id: string, currentUrl: string) => {
     setEditingId(id);
     setEditUrlValue(currentUrl);
   };
 
-  const handleEditSubmit = (id) => {
+  const handleEditSubmit = (id: string) => {
     if (!editUrlValue) {
       toast.error('URL cannot be empty');
       return;
     }
     editMutation.mutate({ id, originalUrl: editUrlValue });
   };
-
-
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col">
@@ -292,10 +292,10 @@ function Dashboard() {
               </div>
               <button
                 type="submit"
-                disabled={createMutation.isLoading}
+                disabled={createMutation.isPending}
                 className="px-6 py-3 bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-500 hover:to-fuchsia-500 text-white rounded-xl text-sm font-semibold transition duration-150 shadow-lg shadow-violet-500/25 flex items-center justify-center space-x-2 disabled:opacity-50"
               >
-                {createMutation.isLoading ? (
+                {createMutation.isPending ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin" />
                     <span>Shortening...</span>
@@ -367,8 +367,8 @@ function Dashboard() {
                       type="datetime-local"
                       value={expiresAt}
                       onChange={(e) => setExpiresAt(e.target.value)}
-                      onClick={(e) => { try { e.target.showPicker(); } catch (_) {} }}
-                      onFocus={(e) => { try { e.target.showPicker(); } catch (_) {} }}
+                      onClick={(e) => { try { (e.target as HTMLInputElement).showPicker(); } catch (_) {} }}
+                      onFocus={(e) => { try { (e.target as HTMLInputElement).showPicker(); } catch (_) {} }}
                       className="w-full bg-slate-950 border border-slate-800 focus:border-violet-500 focus:outline-none rounded-xl py-2 px-3.5 text-xs text-slate-100 text-left cursor-pointer"
                     />
                   </div>
@@ -411,7 +411,7 @@ function Dashboard() {
             <div className="bg-slate-900 border border-slate-800 rounded-2xl p-8 text-center text-red-400">
               <p className="text-sm">Failed to load links from the server.</p>
             </div>
-          ) : urlData?.data?.length === 0 ? (
+          ) : !urlData?.data || urlData.data.length === 0 ? (
             <div className="bg-slate-900 border border-slate-800 rounded-2xl p-12 text-center text-slate-400">
               <Clock className="w-10 h-10 text-slate-750 mx-auto mb-3" />
               <p className="text-sm">No links found matching your criteria.</p>
@@ -420,7 +420,7 @@ function Dashboard() {
             <div className="space-y-4">
               <div className="bg-slate-900 border border-slate-800 rounded-2xl divide-y divide-slate-800 overflow-hidden shadow-xl">
                 
-                {urlData.data.map((url) => {
+                {urlData.data.map((url: UrlItem) => {
                   const expired = isExpired(url.expiresAt);
                   
                   return (
@@ -455,7 +455,7 @@ function Dashboard() {
                             />
                             <button
                               type="submit"
-                              disabled={editMutation.isLoading}
+                              disabled={editMutation.isPending}
                               className="px-3 py-1.5 bg-violet-600 hover:bg-violet-500 text-white rounded-lg text-xs font-semibold disabled:opacity-50 transition"
                             >
                               Save
@@ -572,7 +572,7 @@ function Dashboard() {
                         {/* Delete Link Button */}
                         <button
                           onClick={() => handleDelete(url._id)}
-                          disabled={deleteMutation.isLoading}
+                          disabled={deleteMutation.isPending}
                           className="p-2 bg-red-950/20 hover:bg-red-900/35 border border-red-900/30 text-red-400 hover:text-red-300 rounded-lg transition disabled:opacity-40"
                           title="Delete Link"
                         >
@@ -587,7 +587,7 @@ function Dashboard() {
               </div>
 
               {/* Pagination Row */}
-              {urlData?.pagination?.totalPages > 1 && (
+              {urlData?.pagination?.totalPages && urlData.pagination.totalPages > 1 && (
                 <div className="flex items-center justify-between border-t border-slate-900 pt-4">
                   <div className="text-xs text-slate-400">
                     Showing page <span className="font-semibold text-slate-200">{page}</span> of{' '}
@@ -707,7 +707,7 @@ function Dashboard() {
                 </div>
               </div>
               <button
-                onClick={() => { setActiveStatsData(null); setActiveStatsCode(''); }}
+                onClick={closeStats}
                 className="text-xs text-slate-400 hover:text-white font-semibold transition cursor-pointer"
               >
                 ✕
@@ -830,6 +830,6 @@ function Dashboard() {
 
     </div>
   );
-}
+};
 
 export default Dashboard;

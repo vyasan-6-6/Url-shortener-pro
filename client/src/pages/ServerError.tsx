@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { ServerCrash } from 'lucide-react';
 
-function ServerError() {
+const ServerError: React.FC = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-950 text-slate-100 px-4">
       <div className="max-w-md w-full bg-slate-900 border border-slate-800 rounded-2xl p-8 shadow-2xl space-y-6 text-center backdrop-blur-md">
@@ -34,6 +34,6 @@ function ServerError() {
       </div>
     </div>
   );
-}
+};
 
 export default ServerError;
